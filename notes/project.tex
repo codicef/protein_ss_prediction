@@ -1,0 +1,551 @@
+% Created 2022-01-17 Mon 11:31
+% Intended LaTeX compiler: pdflatex
+\documentclass[a4paper,twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black, citecolor=gray}
+\author{Francesco Codice'}
+\date{\today}
+\title{Protein Secondary Structure Prediction}
+\hypersetup{
+ pdfauthor={Francesco Codice'},
+ pdftitle={Protein Secondary Structure Prediction},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 28.0.50 (Org mode 9.5)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\numberwithin{equation}{section}
+\abstract{}
+\textbf{Motivation:} Protein secondary structures are locally stabilized
+three-dimensional segments of proteins chains. The availability of reliable in
+silico models to predict secondary structures can provide information about the
+function and can be useful in the prediction of the tertiary structure.\\
+\textbf{Methods:}: The GOR
+method approach will be employed first and then a non linear SVM classifier will be tested.\\
+\textbf{Results:}: As expected the GOR method obtains an overall Q3 accuracy of 0.62 on
+the blind-set. The SVM reach 0.69 of Q3 accuracy on the blind set.\\
+\textbf{Contact:} \href{francesco.codice3@studio.unibo.com}{francesco.codice3@studio.unibo.com}\\
+\section{Introduction}
+\label{sec:org4533079}
+\subsection{Motivation}
+\label{sec:org23f3dbb}
+Protein secondary structures are locally stabilized three-dimensional segments
+of proteins chains. The two most common types of secondary structures motifs are
+alpha-helix and beta-strands. The stabilization of secondary structures elements is due
+to \emph{hydrogen bonds}: this electrostatic force of attraction occurs between
+the carboxyl oxygen atoms and the amide-group hydrogen.
+
+The problem of the protein secondary structure prediction was central in the
+field of bioinformatics, since the prediction of secondary structure is more
+tractable than the prediction of the tertiary structure that is still problematic.
+
+Adopting a reductionist approach to predict the secondary structure can be
+useful for the prediction of the whole protein three-dimensional structure.
+
+
+\subsection{Secondary Structure Prediction}
+\label{sec:org45aab29}
+The first important attempt to deal with this problem is known as the
+\emph{Chou-Fasman method}, a model based on the relative frequencies of different
+amino-acids with respect to the belonging secondary structure.
+Indeed different amino-acids, due to their physico-chemical properties, have different
+probabilities to form different secondary structure conformations; for example alanine and
+glutamic acids are common in helix conformations.
+This method takes into consideration only the propensity of single amino acids
+to be part of a particular secondary structures without considering the local
+environment of the residue. \cite{chou}
+
+In 1978 \emph{Garnier et al.} \cite{gor} introduced a new method based on \emph{information theory};
+the method, named GOR, is based on the conditional probability of a certain amino-acid to be
+present in a secondary structure conformation given the relative neighbors
+environment probabilities. With this method the accuracy reached was in the
+60\%-65\% range.
+
+In the 1990s the third generation methods for the prediction of the secondary structure have been introduced; those methods are mainly base on sophisticated machine learning methods that take into consideration evolutionary information such as \emph{multiple sequence alignments}.
+With this generation of methods the accuracy reached the 80\% accuracy threshold.
+
+\subsection{Manuscript Approach}
+\label{sec:org2cfeaa1}
+The main goal of this manuscript is to test and compare two different secondary structure prediction methods: the \emph{GOR method} and a \emph{Support Vector Machine Method}.
+The data used to train the methods come from JPred paper \cite{jpred} ; this data are also used to
+test the model in a 5-fold cross-validation.
+For this manuscript we also generated a blind-set containing 150 proteins with sequence identity lower than 30\% with respect to the JPred4 dataset.
+
+The results show how the machine learning based Support Vector Machine method greatly overcome
+the performances obtained using the GOR method.
+
+
+\section{Material and Methods}
+\label{sec:org6061a62}
+\subsection{Training Set Characteristics}
+\label{sec:org3bee4e3}
+The training set used in this work is obtained from the \emph{JPred4 Training Set}, \cite{jpred}
+as described in \emph{JPred4: JNet training (v.2.3.1) details}. The authors started
+from SCOP superfamily structure-based representative sequences \cite{scop} so that
+the internal redundancy, in terms of evolutionary relationships, is reduced. They started from 1987
+representative sequences and they performed a filtering based on structural resolution (< 2.5 Å) , sequence length (between 30 and 800 residues), missing DSSP information (if >9 consecutive residues) and other structural inconsistencies.
+At this step the authors separated 1357 sequences from the total of 1507 proteins to build the training and blind set.
+From the 1357 proteins a total of 9 sequences are removed as the produced PSI-Blast output is empty so we end up with a total of \emph{1348 proteins}.
+
+
+Starting from this dataset we proceed by building sequence profiles using
+PsiBlast \cite{psiblast} against SwissProt (E-value threshold 0.01), all sequences with empty profile are filtered
+out (144 sequences). The final training set is composed of 1204 sequences with
+relative profile and secondary structures.
+
+\subsubsection{Sequences lengths}
+\label{sec:orgee9aac3}
+We start by analyzing the sequence length distribution to have an overview of
+the training-set composition (\emph{Figure 1}). In the \emph{Table 1} we reported the basic values
+for number, mean, median and standard deviation in terms of sequences lengths.
+
+\begin{center}
+\captionof{table}{Statistics on protein lengths}
+\begin{tabular}{lr}
+Measure & Value\\
+\hline
+Number of proteins & 1348\\
+Arithmetic Mean & 162\\
+Median & 131\\
+Standard Deviation & 104\\
+\end{tabular}
+\end{center}
+
+
+
+
+\begin{center}
+\includegraphics[height=5cm]{/home/codicef/bioinformatics-notes/bioinformatics_lab2/project/imgs/distribution.png}
+\captionof{figure}{Domain Length Distribution}
+\end{center}
+
+
+\subsubsection{Secondary Structures Abundance}
+\label{sec:orga4e5d1d}
+We proceeded by analyzing the relative abundance of secondary structure
+conformations in the given dataset. We can observe from \emph{Figure 2} that the most
+common conformation reported is Coil as the Coil conformation is assigned with
+any DSSP code that is not H, B or E.
+
+\begin{center}
+\includegraphics[height=5cm]{/home/codicef/bioinformatics-notes/bioinformatics_lab2/project/imgs/ss_abundance.png}
+\captionof{figure}{Secondary Structure Conformations Abundance}
+\end{center}
+
+As our next step we proceeded by analyzing the different relative abundance of SCOP Structural Classes, these classes group together structures with similar secondary structure composition \cite{scop} .
+
+\begin{center}
+\includegraphics[height=5cm]{/home/codicef/bioinformatics-notes/bioinformatics_lab2/project/imgs/PIE_SCOP_CLASSES.png}
+\captionof{figure}{Structural classification SCOP Class - Pie Chart}
+\end{center}
+
+\subsubsection{Comparative amino acid composition}
+\label{sec:orgfa031bd}
+In this step of the analysis we proceed by studying the amino acid composition of
+the whole dataset (\emph{Figure 3}) and the relative abundance of secondary structure motifs with
+respect to different amino acids (\emph{Figure 4}).
+From this latter plot we can observe that the aminoacids Alanine, Leucine, Methionine, Glutamic Acid and Glutamine have n high propensity to be part of an Helix.
+Aspartic Acid, Proline, Glycine, Asparagine and Threonine show great propensity to be part
+of a coil. The amino acids that are mainly related to Beta Strands are Valine and Isoleucine.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.9\linewidth]{/home/codicef/bioinformatics-notes/bioinformatics_lab2/project/imgs/AA_distribution.png}
+\caption{Amino acids frequency}
+\end{figure}
+
+\begin{center}
+\includegraphics[height=7cm]{/home/codicef/bioinformatics-notes/bioinformatics_lab2/project/imgs/SS_AA_distribution.png}
+\captionof{figure}{SS Motifs percentages with respect to different amino acids}
+\end{center}
+
+\subsubsection{Taxonomic Classification}
+\label{sec:org2f52f7a}
+A pie chart representing the relative frequencies of the Superkingdoms among the training set
+has been computed. As we can observe in \emph{Figure 4}. the majority of the proteins belongs to
+\emph{bacteria} with 51\%, followed by \emph{eukaryota} with 36 \% and by \emph{archea} with 8 \%.
+
+\begin{center}
+\includegraphics[height=6cm]{/home/codicef/bioinformatics-notes/bioinformatics_lab2/project/imgs/superkingdom-abundance.png}
+\captionof{figure}{Superkingdom abundance pie chart}
+\end{center}
+
+
+\subsection{Blind Set Characteristics}
+\label{sec:orgc4cb65c}
+The \emph{blind set} is fundamental to assess the quality of the predictions. It is generated
+by gathering all the PDBs that respect the following properties:
+\begin{itemize}
+\item resolution lower than \(2.5 \textup{~\AA}\)
+\item sequence length between 50 and 800 residues
+\item deposit date after Jan 2015
+\end{itemize}
+
+Once about 40.000 sequences had been obtained we proceed with the reduction of internal
+redundancy. Using \emph{MMseqs2} \cite{mmseqs} with a greedy set cover approach we reduce the
+internal redundancy below 30\% of sequence identity. Then a reduction of the external
+redundancy is performed in order to remove any protein that has any significant
+match with >30\% S.I. against the JPred training set. To do that we
+performed a \emph{blastp} search (0.1 E-value threshold) of our sequences against the JPred training set. Once
+the filtering is completed the secondary structures are retrieved using DSSP \cite{dssp} .
+
+In the end we randomly select 150 sequences from the dataset and we compute the
+sequence profiles using \emph{PsiBlast} \cite{psiblast} (E-value threshold 0.01). In the end we obtain
+150 proteins in the blind set of which 17 have an empty sequence profile that is
+replaced with the one-hot matrix corresponding to the sequence.
+\subsection{GOR Method Description}
+\label{sec:org392d998}
+The \emph{Garnier-Osguthorpe-Robson} is a method introduced in 1978 for the prediction
+of the protein secondary structure. \cite{gor} , it is based essentially on \emph{information theory} concepts and on
+Bayesian statistics. As we are doing in the \emph{Chou-Fasman} method we base the
+prediction of the secondary structure on the amino acid propensities. In this
+case for each residue we are considering the sequence local context (neighbors
+residues); given a window's length \(w\) for each residue we select \(d = \frac{w-1}{2}\)
+residues both on the right and on the left to be taken into consideration.
+
+The assigned secondary structure conformation is the one with the highest propensity score.
+
+The main goal is to compute the \emph{information function}, in order to evaluate to which
+extent the presence of the window-residues context influences the probability of
+having a certain protein's secondary structure conformation.
+
+For each residue \(R\) with a sliding window equal to \(w\) (\(d=\frac{w-1}{2}\)) the
+information function is computed as follows:
+
+ \begin{equation} \begin{split} I(S; R_{- d}, \dots, R_{+d} ) =
+log \frac{P(S|R_{-d}, \dots , R_{d})}{P(S)} =\\ = log
+\frac{P(S,R_{-d}, \dots , R_{d})}{P(S)P(R_{-d}, \dots, R_{d})} \end{split} \end{equation}
+
+Where \(P(R)\) and \(P(S)\) are the \emph{marginal probabilities} and \(P(S,R_{-d}, \dots ,
+R_{d})\) is the \emph{joint probability}.
+
+As the computation of the joint probability with respect to the \(w\) residues of the windows would need a large database and an high computational cost we assume the statistical independence of the residues in the window. Given this assumption we obtain
+\begin{equation} P(R_{-d}, \dots, R_{d}) = \prod^{d}_{k=-d}P(R_{k}) \end{equation}
+
+The \emph{information function} is computed in the following way
+\begin{equation}\begin{split} I(S; R_{- d}, \dots, R_{+d} )  = log \frac{P(S,R_{-d}, \dots , R_{d})}{P(S)P(R_{-d}, \dots, R_{d})} = \\ = log \prod_{k=-d}^{d} \frac{P(R_{k}, S)}{P(S)P(R_{k})} = \sum_{k=-d}^{d} log  \frac{P(R_{k}, S)}{P(S)P(R_{k})} \end{split}\end{equation}
+
+The predicted secondary structure is the one with the highest information
+function with respect to the specific window.
+\begin{equation} \begin{split}S^{*} = \text{argmax}_{S}I(S; R_{-d}, \dots, R_{d}) = \\ = \text{argmax}_{S}\sum^{d}_{k=-d} I(S;R_{k}) \end{split}\end{equation}
+
+
+In the specific implementation used in this project the \emph{sequence profile} is
+taken into consideration in the computation of the information function;
+evolutionary information improve the quality of the predictions.
+
+
+\subsection{Support Vector Machine}
+\label{sec:orga8d8d54}
+The \emph{support vector machine} is a machine learning method that is widely adopted
+both for classification and for regression tasks.
+
+Given a set of samples belonging to two different classes (\(y=\pm 1\)) the
+training algorithm guarantees to find the best separating hyperplane \(<\vec{w}, \vec{x}> + b =0\) between the two classes.
+
+The learning of the hyperplane parameters is based on the maximization of the
+\emph{margin} between the two classes that corresponds to the minimization of the
+norm of \(w\). Furthermore a constraint on the optimization problem should be set:
+we need to ensure that the samples are divided by the hyperplane.
+\(y_{i}(<\vec{w}\vec{x}> + b) \geq 1\). To guarantee the satisfaction of the
+constraints the \emph{Dual Lagrangian} is used: the optimization will consist in the
+learning of the lagrange multipliers \(\alpha_{i}\). The \(w\) and the \(b\) can be then computed
+on the basis of the lagrange multipliers selected and the support vectors found.
+
+In our specific case we are going to adopt a \emph{soft margin} approach to introduce
+a certain degree of tolerance in the classification.
+The function to be minimized is
+\begin{equation} min \; \frac{1}{2} ||w||^{2} + C \sum_{i=1}^{n} \xi_{i}\end{equation}
+
+The constraints to be imposed are
+\begin{equation} y_{i}(<\vec{w}, \vec{x}> + b) \geq 1- \xi_{i} \;\;\; \xi_{i}\geq 0 , \forall i  \end{equation}
+
+where \(\xi_{i}\) is a \emph{slack variable} that can be seen as an upper bound of the
+classification error for the sample \(i\). The \(C\) parameter is a tradeoff
+parameter between the error and the margin, high \(C\) values corresponds to \emph{hard
+margin} and instead low \(C\) values corresponds to \emph{soft margin}.
+
+Implementing the \emph{dual lagrangian} we obtain the following optimization problem to be solved
+
+\begin{equation}
+max \;\; \sum_{i=1}\alpha_{i} - \frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \alpha_{i}\alpha_{j} y_{i}y_{j} <x_{i}, x_{j}>
+\end{equation}
+with as constraints
+\begin{itemize}
+\item \(0 \leq \alpha_{i} \leq C \;\; \forall i\)
+\item \(\sum^{n}_{i=1} \alpha_{i}y_{i}=0\)
+\end{itemize}
+
+This optimization problem is solved using \emph{quadratic programming} algorithms the
+final solution can be find using the following formulas
+\begin{equation}w= \sum_{s}\alpha_{s}y_{s}x_{s} \end{equation}
+\begin{equation}b= y_{k}(1- \xi_{k}) - \sum_{s}\alpha_{s}y_{s}<x_{s}, x_{k}> \end{equation}
+
+
+The classification function is
+\begin{equation}f(x) = \sum_{s} \alpha_{s}y_{s}<x_{s}, x> + b\end{equation}
+\begin{itemize}
+\item if positive the sample belongs to \(y=+1\)
+\item if negative the sample belongs to \(y=-1\)
+\end{itemize}
+
+
+The approach described above is able to perform a classification for \emph{linearly
+separable classes}; to perform non-linear classification we should rely on the
+\emph{Kernel trick}. We substitute the scalar product in the Dual lagrangian
+with a function \(K(x_{i}, x_{j})\) . In that way we map implicitly our
+samples data into a higher dimensional space where the two classes are
+separated meaningfully by the best separating hyperplane.
+
+In our specific case the kernel function is \emph{Radial-basis function}; the value of that function
+depends on the distance between the two points in input.
+
+\begin{equation}
+K(x_{i}, x_{j}) = \text{exp}(\frac{||x_{i} - x_{j}||^{2}}{2 \sigma^{2}})
+\end{equation}
+The hyperparameter \(\sigma\) controls to which degree two points should be
+considered close one to each other. Related to \(\sigma\) in the scikit-learn SVM
+model implementation we use \(\gamma\) as hyperparameter: high values of \(\gamma\)
+corresponds to a ``strict'' classification while low values of \(\gamma\)
+corresponds to a more general classification.
+
+In our application we are going to test the \emph{RBF Gaussian kernel}.
+For the RBF kernel model we are going to perform a grid search to select the best hyperparameters values (for \(C\) and \(\gamma\) ).
+
+
+Thinking in terms of \emph{protein secondary structure prediction} each sample
+\(x^{i}\) will represent a residue in the protein sequence with its sliding
+windows context extracted from the sequence profile. In this application a
+window \(w=17\) is used. For each sample we end up having \(20 \cdot 17=340\) features.
+
+To deal with the \emph{multi-class} classification problem we adopt the \emph{one-vs-rest} approach.
+We train for each of the three secondary structure conformations a classifier that gets as input
+samples belonging to the specific secondary structure conformation labeled as positives and all the other samples (belonging to the other conformations) labeled as negative.
+
+\begin{center}
+\includegraphics[height=1.7cm]{/home/codicef/org/.attach/ae/3775b4-9dea-46c1-a3bb-7c768edb8761/_20220111_122258screenshot.png}
+\captionof{figure}{One-vs-rest approach}
+\end{center}
+
+
+\subsection{Evaluation of the prediction}
+\label{sec:org45a1633}
+The evaluation procedure has the goal to assess the quality of the predictions
+performed by the models that we are testing. To achieve this goal we are going
+to test the model on the training set using a \emph{5-fold cross-validation} and then
+the evaluation is performed on a blind-test-set.
+
+In the 5-fold cross-validation, the JPred dataset is split into 5 independent
+non-redundant subsets (provided with the JPred dataset it self). For each of the five cross-validation steps, we selected
+4 of the 5 subsets as the training set and the other one as the test set. For
+each iteration the evaluation metrics are computed and at the end an average
+between the results is performed.
+
+To perform the evaluation the following metrics are computed for each possible
+conformation. For each specific conformation by \emph{positive} we refer to predictions
+belonging to that specific conformation and for negative we refer to predictions
+relative to the other secondary structure conformations.
+
+\begin{itemize}
+\item \emph{Precision} : the percentage of correct positive predictions with respect to
+the number of positive predictions.
+\begin{equation} \text{PPV} = \frac{TP}{TP+FP} \end{equation}
+\item \emph{Recall} : the percentage of correct positive predictions with respect to the
+number of actual positive examples.
+
+\begin{equation} \text{TPR} = \frac{TP}{TP+FN} \end{equation}
+\item \emph{Matthews correlation coefficient} (MCC) : balanced metric used to evaluate skewed classes. The values are in the range of \([-1, +1]\).
+
+\begin{equation} \begin{split} \mathrm {MCC} =\frac {\mathrm {TP} \times \mathrm {TN} -\mathrm {FP} \times \mathrm {FN} }{\sqrt {(\mathrm {TP} +\mathrm {FP} )(\mathrm {TP} +\mathrm {FN} )(\mathrm {TN} +\mathrm {FP} )\\(\mathrm {TN} +\mathrm {FN} )}} \end{split}  \end{equation}
+\end{itemize}
+
+
+As general metric for the whole prediction accuracy we adopt the \(Q_{3}\) metric that is computed as follows
+\begin{equation} Q_{3} = \frac{TP_{E} + TP_{H} + TP_{C}}{N}  \end{equation}
+
+
+\section{Results}
+\label{sec:org4de8b6b}
+The model has been tested using both the GOR and the SVM models; as expected
+non-linear SVM models obtains the best performance.
+
+\subsection{Cross Validation Test}
+\label{sec:org7af667f}
+As described in \emph{Methods} on the training-set a 5-fold crossvalidation has been
+performed; during that phase a grid-search on SVM hyperparameters has been done.
+The best hyperparameters selected are \emph{gamma} equal to 0.5 and \(C\) equal to 2.
+The complete gridsearch results can be found in the appendix of the article.
+
+As we can see in \emph{Table 2}  the GOR method as expected reach an overall Q3 accuracy of 0.62. The
+\emph{GOR} method is pretty stable for each iteration of the crossvalidation.
+
+\begin{table}[htbp]
+\caption{Results of the GOR Method in 5-fold crossvalidation}
+\centering
+\begin{tabular}{p{0.8cm}p{0.5cm}p{0.5cm}p{0.5cm}p{0.5cm}p{0.5cm}ll}
+Helix & CV1 & CV2 & CV3 & CV4 & CV5 & Avg\\
+\hline
+\(MCC_H\) & 0.52 & 0.53 & 0.52 & 0.54 & 0.52 & \(0.52 \pm\) 0.004\\
+\(PPV_H\) & 0.62 & 0.64 & 0.64 & 0.63 & 0.61 & \(0.63 \pm\) 0.004\\
+\(TPR_H\) & 0.82 & 0.80 & 0.79 & 0.82 & 0.81 & \(0.81 \pm\) 0.007\\
+ &  &  &  &  &  & \\
+Strand & CV1 & CV2 & CV3 & CV4 & CV5 & Avg\\
+\hline
+\(MCC_E\) & 0.44 & 0.42 & 0.44 & 0.45 & 0.45 & \(0.44 \pm\) 0.006\\
+\(PPV_E\) & 0.50 & 0.45 & 0.47 & 0.49 & 0.51 & \(0.49 \pm\) 0.010\\
+\(TPR_E\) & 0.69 & 0.70 & 0.72 & 0.73 & 0.70 & \(0.71 \pm\) 0.008\\
+ &  &  &  &  &  & \\
+Coil & CV1 & CV2 & CV3 & CV4 & CV5 & Avg\\
+\hline
+\(PPV_C\) & 0.41 & 0.42 & 0.42 & 0.42 & 0.42 & \(0.42 \pm\) 0.002\\
+\(MCC_C\) & 0.80 & 0.81 & 0.80 & 0.82 & 0.81 & \(0.81 \pm\) 0.004\\
+\(TPR_C\) & 0.42 & 0.43 & 0.44 & 0.41 & 0.43 & \(0.43 \pm\) 0.006\\
+ &  &  &  &  &  & \\
+\hline
+\(Q3\) & 0.62 & 0.62 & 0.62 & 0.63 & 0.63 & \(0.62 \pm\) 0.002\\
+\end{tabular}
+\end{table}
+
+ The SVM models finding the best separating hyperplane is better than the GOR
+method in modeling this complex inference. The amino acid propensity used by the
+GOR method is indeed an oversimplification that does not model the actual
+complexity of the relationship between the sequence profile context and the
+secondary structure conformation. Support vector machines model are able to take
+into account more information to compute the predictions.
+
+The SVM model performances are reported in \emph{Table 3} , the model selected by
+grid-search obtains good performances in terms of MCC on each conformation and
+an overall Q3 accuracy of \emph{0.71}.
+
+
+\hspace{-3cm}
+\begin{table}[htbp]
+\caption{Results of the SVM model (rbf with gamma=0.5 and C=2) in 5-fold crossvalidation}
+\centering
+\begin{tabular}{p{0.8cm}p{0.5cm}p{0.5cm}p{0.5cm}p{0.5cm}p{0.5cm}ll}
+Helix & CV1 & CV2 & CV3 & CV4 & CV5 & Avg\\
+\hline
+\(MCC_H\) & 0.64 & 0.64 & 0.70 & 0.66 & 0.68 & \(0.66 \pm\) 0.013\\
+\(PPV_H\) & 0.83 & 0.86 & 0.85 & 0.85 & 0.84 & \(0.85 \pm\) 0.006\\
+\(TPR_H\) & 0.67 & 0.67 & 0.65 & 0.70 & 0.72 & \(0.69 \pm\) 0.009\\
+ &  &  &  &  &  & \\
+Strand & CV1 & CV2 & CV3 & CV4 & CV5 & Avg\\
+\hline
+\(MCC_E\) & 0.50 & 0.48 & 0.39 & 0.49 & 0.48 & \(0.50 \pm\) 0.023\\
+\(PPV_E\) & 0.80 & 0.76 & 0.81 & 0.81 & 0.80 & \(0.79 \pm\) 0.011\\
+\(TPR_E\) & 0.42 & 0.40 & 0.49 & 0.39 & 0.41 & \(0.41 \pm\) 0.020\\
+ &  &  &  &  &  & \\
+Coil & CV1 & CV2 & CV3 & CV4 & CV5 & Avg\\
+\hline
+\(MCC_C\) & 0.48 & 0.49 & 0.49 & 0.49 & 0.50 & \(0.49 \pm\) 0.002\\
+\(PPV_C\) & 0.61 & 0.62 & 0.62 & 0.62 & 0.63 & \(0.63 \pm\) 0.002\\
+\(TPR_C\) & 0.87 & 0.88 & 0.88 & 0.88 & 0.88 & \(0.88 \pm\) 0.002\\
+ &  &  &  &  &  & \\
+\hline
+\(Q3\) & 0.70 & 0.71 & 0.71 & 0.71 & 0.71 & \(0.71 \pm\) 0.002\\
+ &  &  &  &  &  & \\
+\end{tabular}
+\end{table}
+
+\subsection{Blind Set Test}
+\label{sec:org3db8f51}
+The model has been tested on a unseen blind test set that has been generated as
+described in 2.2.
+
+The blind set contains 150 proteins of which 17 do have an empty profile
+represented as the one hot encoding of the sequence. The category of sequences with empty
+profile have a low level of information.
+
+The GOR method being less sensible to the features information has stable
+performance both on the full blindset and on the proteins without a meaningful
+sequence profile.\\
+The SVM model instead is more sensible to the sequence profiles missing information, indeed the performance on this subset are not satisfactory obtaining a \(Q_{3}\) equal to \(0.38\) .
+
+As expected on the whole blind-set the SVM model (C=2, gamma=0.5) obtains the
+best performances in terms of MCC on all secondary structure conformations (\(MCC_{H} = 0.61 , \: MCC_{E}=0.54 , \: MCC_{C}=0.47\)) and
+also in the overall Q3 accuracy (\(Q_{3} = 0.69\)).
+
+
+All the results for the full blind-set are reported in \emph{Table 4}, the performances on the
+sub-set with missing profiles are reported in \emph{Table 5}.\\
+The test performed on the subset containing only proteins with missing profiles (replace by one-hot encoding) is performed on 17 examples and it is approximative, having few elements leads to not-reliable metrics values.\\
+
+\begin{center}
+\captionof{table}{Performances on full blind-set. Comparison of GOR method with SVM model (gamma=0.5, C=2). N=150}
+\begin{tabular}{lrrrl}
+Gor Method & Helix & Strand & Coil & Overall\\
+\hline
+MCC & 0.48 & 0.42 & 0.40 & \\
+PPV & 0.63 & 0.48 & 0.75 & \\
+TPR & 0.76 & 0.69 & 0.43 & \\
+Q3 &  &  &  & 0.62\\
+ &  &  &  & \\
+SVM Method & Helix & Strand & Coil & Overall\\
+\hline
+MCC & 0.61 & 0.54 & 0.47 & \\
+TPR & 0.61 & 0.47 & 0.57 & \\
+PPV & 0.87 & 0.81 & 0.89 & \\
+Q3 &  &  &  & 0.69\\
+\end{tabular}
+\end{center}
+
+
+
+
+
+
+\begin{center}
+\captionof{table}{Performances on blind-set elements with empty profile. Comparison of GOR method with SVM model (gamma=0.5, C=2). N=17}
+\begin{tabular}{lrrrl}
+Gor Method & Helix & Strand & Coil & Overall\\
+\hline
+MCC & 0.51 & 0.40 & 0.39 & \\
+PPV & 0.66 & 0.47 & 0.75 & \\
+TPR & 0.82 & 0.66 & 0.38 & \\
+Q3 &  &  &  & 0.62\\
+ &  &  &  & \\
+SVM Method & Helix & Strand & Coil & Overall\\
+\hline
+MCC & 0.08 & 0.0 & 0.04 & \\
+TPR & 0.88 & 0.0 & 0.38 & \\
+PPV & 0.01 & 0.0 & 0.99 & \\
+Q3 &  &  &  & 0.38\\
+\end{tabular}
+\end{center}
+
+\section{Conclusion}
+\label{sec:org179bdd1}
+The prediction of the secondary structure conformation can be done with a high
+accuracy, with the model based on SVM a \(Q_{3}\) accuracy of \(0.69\) on the blind
+set is achieved. As expected the GOR method obtain lower overall \(Q_{3}\)
+accuracy reaching \(0.62\) , however this model show a certain degree of robustness
+when dealing with empty profile proteins.
+
+
+The SVM model strongly relies on the evolutionary information contained in the
+multiple sequence alignment and it is able to obtain satisfactory predictions in
+terms of \(Q_{3}\) accuracy, \(MCC\) , precision and recall on the whole blind-set
+and on cross-validation.
+
+We can consider the in-silico analysis of the secondary structure conformation
+satisfying enough to be used when experimental information is not available.
+
+
+
+\bibliography{bibliography}
+\bibliographystyle{unsrt}
+\end{document}

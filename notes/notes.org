@@ -1,0 +1,82 @@
+#+TITLE: Laboratory of Bioinformatics 2 - Notes
+
+* Secondary Structure
+Protein secondary structure is the three dimensional form of local segments of
+proteins. The two most common secondary structural elements are alpha helices
+and beta sheets, though beta turns and omega loops occur as well.
+
+The secondary structure is given by the backbone folding and it is stabilized by
+hydrogen bonds.
+
+
+
+** Hydrogen Bond
+A hydrogen bond (or H-bond) is a primarily electrostatic force of attraction
+between a
+- hydrogen (H) atom which is covalently bound to a more electronegative atom or
+  group,
+- another electronegative atom bearing a lone pair of electrons-the hydrogen
+  bond acceptor (Ac). (Oxygen for example)
+
+
+** Types
+The most common secondary structures are /alpha helices/ and /beta sheets/.
+
+Other helices, such as the 310 helix and π helix, are calculated to have
+energetically favorable hydrogen-bonding patterns but are rarely observed in
+natural proteins except at the ends of α helices due to unfavorable backbone
+packing in the center of the helix.
+
+*DSSP Classification*\\
+- G = 3-turn helix (310 helix). Min length 3 residues.
+- H = 4-turn helix (α helix). Minimum length 4 residues.
+- I = 5-turn helix (π helix). Minimum length 5 residues.
+- T = hydrogen bonded turn (3, 4 or 5 turn)
+- E = extended strand in parallel and/or anti-parallel β-sheet conformation. Min
+  length 2 residues.
+- B = residue in isolated β-bridge (single pair β-sheet hydrogen bond formation)
+- S = bend (the only non-hydrogen-bond based assignment).
+- C = coil (residues which are not in any of the above conformations).
+
+
+*** Alpha Helix
+The alpha helix (α-helix) is a common motif in the secondary structure of
+proteins and is a right hand-helix conformation in which every backbone N−H
+group hydrogen bonds to the backbone C=O group of the amino acid located four
+residues earlier along the protein sequence.
+
+
+*** Beta sheet
+The beta sheet, (β-sheet) (also β-pleated sheet) is a common motif of the
+regular protein secondary structure. Beta sheets consist of beta strands
+(β-strands) connected laterally by at least two or three backbone hydrogen
+bonds, forming a generally twisted, pleated sheet. A β-strand is a stretch of
+polypeptide chain typically 3 to 10 amino acids long with backbone in an
+extended conformation.
+
+
+
+** DSSP (Define Secondary Structure of Proteins)
+The DSSP algorithm is the standard method for assigning secondary structure to
+the amino acids of a protein, given the atomic-resolution coordinates of the
+protein.
+
+*** Approach
+A) Dihedrial angles and $C_{\alpha}$ positions are not used.
+B) Single decision cutoff in the bond energy
+C) Searching of H-bond between NH atoms of a residue $i$ and the CO atoms on another residue $j$
+D) Repeating 4-turns define $\alpha$ helice
+E) Repeating bridges (H bonds between residues not near one to each other)
+
+*** Algorithm/Formula
+We calculate the electrostatic interaction energy
+- \(E = q_{1}q_{2} \frac{1}{r(ON)} + \frac{1}{r(CH)} - \frac{1}{r(OH)} - \frac{1}{r(CN)} \cdot 332 \text{kcal/mol}\)
+    - \(q_{1} = 0.42e\) partial charges of CO
+    - \(q_{2} = 0.20e\) partial charges of NH
+    - \(r(AB)\) distance between atom A and atom B
+- A hydrogen bond is identified if E in the following equation is less than $-0.5 \text{kcal/mol}$ :
+
+
+
+* Neural Network
+Is a general non-linear functional mapping

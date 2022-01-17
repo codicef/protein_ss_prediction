@@ -1,0 +1,44 @@
+\begin{thebibliography}{1}
+
+\bibitem{chou}
+P~Y Chou and G~D Fasman.
+\newblock Empirical predictions of protein conformation.
+\newblock {\em Annual Review of Biochemistry}, 47(1):251--276, 1978.
+\newblock PMID: 354496.
+
+\bibitem{gor}
+J.~Garnier, D.J. Osguthorpe, and B.~Robson.
+\newblock Analysis of the accuracy and implications of simple methods for
+  predicting the secondary structure of globular proteins.
+\newblock {\em Journal of Molecular Biology}, 120(1):97--120, 1978.
+
+\bibitem{jpred}
+Alexey Drozdetskiy, Christian Cole, James Procter, and Geoffrey~J. Barton.
+\newblock {JPred4: a protein secondary structure prediction server}.
+\newblock {\em Nucleic Acids Research}, 43(W1):W389--W394, 04 2015.
+
+\bibitem{scop}
+John-Marc Chandonia, Naomi~K Fox, and Steven~E Brenner.
+\newblock {SCOPe: classification of large macromolecular structures in the
+  structural classification of proteins—extended database}.
+\newblock {\em Nucleic Acids Research}, 47(D1):D475--D481, 11 2018.
+
+\bibitem{psiblast}
+Stephen Altschul, T.L. Madden, A~Shaffer, Jiezhang Zhang, and Zhengh Zhang.
+\newblock Gapped blast and psi-blast:a new generation of protein database
+  search programs.
+\newblock {\em Nucl. Acids. Res.}, 25:3389--3402, 11 1996.
+
+\bibitem{mmseqs}
+Martin Steinegger and Johannes Söding.
+\newblock Mmseqs2 enables sensitive protein sequence searching for the analysis
+  of massive data sets.
+\newblock {\em Nature Biotechnology}, 35, 10 2017.
+
+\bibitem{dssp}
+W~Kabsch and C~Sander.
+\newblock Dssp: definition of secondary structure of proteins given a set of 3d
+  coordinates.
+\newblock {\em Biopolymers}, 22:2577--2637, 1983.
+
+\end{thebibliography}
