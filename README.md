@@ -1,6 +1,8 @@
 # Protein Secondary Structure Prediction
 Project about Protein Secondary Structure Prediction. Based on JPred training set and on a self-generated unseen blind set.
 
+Methods and results available at https://github.com/codicef/protein_ss_prediction/blob/main/notes/codice_francesco_lab2_project.pdf
+
 Folders content
 - ./src
   - ss_models.py : file containing GOR method implementation with wrapper, SVM classifier with relative wrapper and an abstract class implementing methods for crossvalidation and performance assessment.
